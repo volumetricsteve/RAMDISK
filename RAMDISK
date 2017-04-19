@@ -1,0 +1,57 @@
+#!/bin/bash
+
+console_input=''
+RAMDISK_COUNT="$(mount | grep tmpfs | grep ramdisk | wc -l)"
+
+if [[ $RAMDISK_COUNT = "0" ]]
+        then
+        echo "ramdisk - deactivated"
+else
+        echo "ramdisk - activated"
+        mount | grep tmpfs | grep ramdisk
+fi
+
+if [[ $1 = '-help' ]]
+        then
+        echo "Usage:: RAMDISK size location"
+        echo "        RAMDISK 4G /ramdisk"
+        $1=''
+fi
+
+if [[ $1 = '' && $2 = '' ]]
+        then
+        echo "inputs missing - assume default (4G @ /ramdisk) ?"
+        echo "y/n"
+        read -e console_input
+        if [[ $console_input = 'y' ]]
+                then
+                mount -t tmpfs -o size=4G tmpfs /ramdisk
+                mount | grep tmpfs | grep ramdisk
+                else
+                        if [[ $console_input = 'n' ]]
+                                then
+                                echo "exiting"
+                                exit
+                                else
+                                        echo "bad input, exiting"
+                                        exit
+                        fi
+        fi
+fi
+
+if [[ $1 != '' && $2 = '' ]]
+        then
+        echo "assuming '/ramdisk' for location"
+        echo "size :: $1"
+        mount -t tmpfs -o size=$1 tmpfs /ramdisk
+        exit
+fi
+
+if [[ $1 != '' && $2 != '' ]]
+        then
+        echo "size :: $1"
+        echo "location :: $2"
+        mount -t tmpfs -o size=$1 tmpfs $2
+        mount | grep tmpfs | grep ramdisk
+        exit
+fi
